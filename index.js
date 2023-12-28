@@ -41,6 +41,7 @@ function unknownEndpoint(request, response) {
 app.use(express.json());
 app.use(cors());
 app.use(requestLogger);
+app.use(express.static('dist'));
 
 app.get('/', (request, response) => {
   response.send('<h1>Hello, World!</h1>');
