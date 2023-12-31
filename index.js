@@ -1,5 +1,7 @@
+// NPM Packages
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
 
 const app = express();
 
@@ -38,6 +40,28 @@ function unknownEndpoint(request, response) {
   response.status(404).send({ error: 'Unknown endpoint' });
 }
 
+const password = process.argv[2];
+
+const url = `mongodb+srv://Dakouri:${password}@cluster0.racdybo.mongodb.net/noteApp?retryWrites=true&w=majority`;
+
+mongoose.set('strictQuery', false);
+mongoose.connect(url);
+
+const noteSchema = new mongoose.Schema({
+  content: String,
+  important: Boolean,
+});
+
+noteSchema.set('toJSON', {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString();
+    delete returnedObject._id;
+    delete returnedObject.__v;
+  },
+});
+
+const Note = mongoose.model('Note', noteSchema);
+
 app.use(express.json());
 app.use(cors());
 app.use(requestLogger);
@@ -48,7 +72,9 @@ app.get('/', (request, response) => {
 });
 
 app.get('/api/notes', (request, response) => {
-  response.json(notes);
+  Note.find({}).then((notes) => {
+    response.json(notes);
+  });
 });
 
 app.get('/api/notes/:id', (request, response) => {
