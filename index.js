@@ -43,6 +43,16 @@ function unknownEndpoint(request, response) {
   response.status(404).send({ error: 'Unknown endpoint' });
 }
 
+function errorHandler(error, request, response, next) {
+  console.error(error.message);
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformed id' });
+  }
+
+  next(error);
+}
+
 app.use(express.json());
 app.use(cors());
 app.use(requestLogger);
@@ -58,12 +68,18 @@ app.get('/api/notes', (request, response) => {
   });
 });
 
-app.get('/api/notes/:id', (request, response) => {
+app.get('/api/notes/:id', (request, response, next) => {
   const id = request.params.id;
 
-  Note.findById(id).then((note) => {
-    response.json(note);
-  });
+  Note.findById(id)
+    .then((note) => {
+      if (note) {
+        response.json(note);
+      } else {
+        response.status(404).end();
+      }
+    })
+    .catch((error) => next(error));
 });
 
 app.delete('/api/notes/:id', (request, response) => {
@@ -93,6 +109,7 @@ app.post('/api/notes', (request, response) => {
 });
 
 app.use(unknownEndpoint);
+app.use(errorHandler);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
