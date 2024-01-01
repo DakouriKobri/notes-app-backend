@@ -8,8 +8,6 @@ const Note = require('./models/note');
 
 const app = express();
 
-let notes = [];
-
 function requestLogger(request, response, next) {
   console.log('Method:', request.method);
   console.log('Path:', request.path);
@@ -81,6 +79,22 @@ app.post('/api/notes', (request, response) => {
   note.save().then((savedNote) => {
     response.json(savedNote);
   });
+});
+
+app.put('/api/notes/:id', (request, response, next) => {
+  const id = request.params.id;
+  const { content, important } = request.body;
+
+  const note = {
+    content,
+    important,
+  };
+
+  Note.findByIdAndUpdate(id, note, { new: true })
+    .then((updatedNote) => {
+      response.json(updatedNote);
+    })
+    .catch((error) => next(error));
 });
 
 // Handler of request with unknown endpoint
