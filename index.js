@@ -1,7 +1,7 @@
 // NPM Packages
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+require('dotenv').config();
 
 // Local Files
 const Note = require('./models/note');
@@ -53,10 +53,10 @@ function errorHandler(error, request, response, next) {
   next(error);
 }
 
-app.use(express.json());
 app.use(cors());
-app.use(requestLogger);
 app.use(express.static('dist'));
+app.use(express.json());
+app.use(requestLogger);
 
 app.get('/', (request, response) => {
   response.send('<h1>Hello, World!</h1>');
@@ -108,7 +108,10 @@ app.post('/api/notes', (request, response) => {
   });
 });
 
+// Handler of request with unknown endpoint
 app.use(unknownEndpoint);
+
+// Handler of request with result to errors
 app.use(errorHandler);
 
 const PORT = process.env.PORT;
