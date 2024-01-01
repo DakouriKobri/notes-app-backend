@@ -56,12 +56,14 @@ app.get('/api/notes/:id', (request, response, next) => {
     .catch((error) => next(error));
 });
 
-app.delete('/api/notes/:id', (request, response) => {
-  const id = Number(request.params.id);
-  const note = notes.find((note) => note.id === id);
-  if (!note) return response.status(404).end();
-  notes = notes.filter((note) => note.id !== id);
-  response.status(204).end();
+app.delete('/api/notes/:id', (request, response, next) => {
+  const id = request.params.id;
+
+  Note.findByIdAndDelete(id)
+    .then((result) => {
+      response.status(204).end();
+    })
+    .catch((error) => next(error));
 });
 
 app.post('/api/notes', (request, response) => {
