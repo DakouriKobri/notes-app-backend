@@ -8,6 +8,10 @@ const noteSchema = new mongoose.Schema({
     required: [true, 'Content is missing'],
   },
   important: Boolean,
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  },
 });
 
 noteSchema.set('toJSON', {
