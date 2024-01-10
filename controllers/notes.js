@@ -1,5 +1,6 @@
 // NPM Packages
 const notesRouter = require('express').Router();
+const jwt = require('jsonwebtoken');
 
 // Local Files
 const Note = require('../models/note');
@@ -24,15 +25,28 @@ notesRouter.get('/:id', async (request, response) => {
   }
 });
 
-notesRouter.post('/', async (request, response) => {
-  const { content, important, userId } = request.body;
+function getTokenFrom(request) {
+  const authorization = request.get('authorization');
+  if (authorization && authorization.startsWith('Bearer ')) {
+    return authorization.replace('Bearer ', '');
+  }
+  return null;
+}
 
-  const user = await User.findById(userId);
+notesRouter.post('/', async (request, response) => {
+  const { content, important } = request.body;
+  const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET);
+
+  if (!decodedToken.id) {
+    return response.status(401).json({ error: 'Invalid token' });
+  }
+
+  const user = await User.findById(decodedToken.id);
 
   const note = new Note({
     content,
     important: important ?? false,
-    user: userId,
+    user: user._id,
   });
 
   const savedNote = await note.save();
