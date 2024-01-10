@@ -20,7 +20,7 @@ const userSchema = mongoose.Schema({
 
 userSchema.plugin(uniqueValidator);
 
-userSchema.set('toJson', {
+userSchema.set('toJSON', {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();
     delete returnedObject._id;
